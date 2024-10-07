@@ -35,7 +35,12 @@ class ChatPDF:
         chunks = filter_complex_metadata(chunks)
 
         chromadb.api.client.SharedSystemClient.clear_system_cache()
-        vector_store = Chroma.from_documents(documents=chunks, embedding=FastEmbedEmbeddings())
+
+        embedding_model = FastEmbedEmbeddings()
+        if embedding_model._model is None:
+            embedding_model._model = embedding_model.model_extra['_model']
+
+        vector_store = Chroma.from_documents(documents=chunks, embedding=embedding_model)
         self.retriever = vector_store.as_retriever(
             search_type="similarity_score_threshold",
             search_kwargs={
